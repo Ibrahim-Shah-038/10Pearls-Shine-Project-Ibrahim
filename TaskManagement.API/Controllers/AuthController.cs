@@ -1,10 +1,14 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using TaskManagement.API.Data;
 using TaskManagement.API.DTOs;
+using TaskManagement.API.Helpers;
 using TaskManagement.API.Models;
 
 namespace TaskManagement.API.Controllers
@@ -15,44 +19,104 @@ namespace TaskManagement.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(ApplicationDbContext context, IConfiguration config)
+        public AuthController(ApplicationDbContext context, IConfiguration config, ILogger<AuthController> logger)
         {
             _context = context;
             _config = config;
+            _logger = logger;
         }
 
         [HttpPost("register")]
         public IActionResult Register(RegisterDto dto)
         {
+            _logger.LogInformation("Attempting to register user: {Username} ({Email})", dto.Username, dto.Email);
+
+            // Check if user exists
+            var existingUser = _context.Users.FirstOrDefault(u => u.Email == dto.Email);
+            if (existingUser != null)
+            {
+                _logger.LogWarning("Registration failed: Email {Email} is already registered.", dto.Email);
+                return BadRequest(new { message = "Email is already registered." });
+            }
+
+            // Determine role (sanitize to Admin/SuperUser/User)
+            string role = "User";
+            if (!string.IsNullOrWhiteSpace(dto.Role))
+            {
+                if (dto.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    role = "Admin";
+                }
+                else if (dto.Role.Equals("SuperUser", StringComparison.OrdinalIgnoreCase))
+                {
+                    role = "SuperUser";
+                }
+            }
+
             var user = new User
             {
                 Username = dto.Username,
                 Email = dto.Email,
                 PasswordHash = PasswordHasher.Hash(dto.Password),
-                Role = "User"
+                Role = role
             };
 
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            return Ok("User registered successfully");
+            _logger.LogInformation("User registered successfully: {Username} with role {Role}", user.Username, user.Role);
+            return Ok(new { message = "User registered successfully." });
         }
 
         [HttpPost("login")]
         public IActionResult Login(LoginDto dto)
         {
+            _logger.LogInformation("Attempting login for user: {Email}", dto.Email);
+
             var hashedPassword = PasswordHasher.Hash(dto.Password);
 
             var user = _context.Users
                 .FirstOrDefault(u => u.Email == dto.Email && u.PasswordHash == hashedPassword);
 
             if (user == null)
-                return Unauthorized("Invalid credentials");
+            {
+                _logger.LogWarning("Login failed: Invalid credentials for email {Email}", dto.Email);
+                return Unauthorized(new { message = "Invalid email or password." });
+            }
 
             var token = GenerateJwtToken(user);
 
+            _logger.LogInformation("User logged in successfully: {Username} ({Role})", user.Username, user.Role);
             return Ok(new { token });
+        }
+
+        [HttpGet("profile")]
+        [Authorize]
+        public IActionResult GetProfile()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                _logger.LogWarning("Profile fetch failed: NameIdentifier claim not found or invalid.");
+                return BadRequest(new { message = "Invalid user identification in token." });
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+            if (user == null)
+            {
+                _logger.LogWarning("Profile fetch failed: User with ID {UserId} not found in database.", userId);
+                return NotFound(new { message = "User not found." });
+            }
+
+            return Ok(new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role
+            });
         }
 
         private string GenerateJwtToken(User user)
@@ -82,3 +146,4 @@ namespace TaskManagement.API.Controllers
         }
     }
 }
+
