@@ -11,6 +11,7 @@ import TaskList from './pages/TaskList';
 import TaskForm from './pages/TaskForm';
 import TaskDetail from './pages/TaskDetail';
 import UserProfile from './pages/UserProfile';
+import UserManagement from './pages/UserManagement';
 import { Sparkles, X } from 'lucide-react';
 
 // Protected Route Component
@@ -194,6 +195,17 @@ const AppContent = () => {
             <ProtectedRoute>
               <MainLayout>
                 <UserProfile />
+              </MainLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/users" 
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <UserManagement />
               </MainLayout>
             </ProtectedRoute>
           } 
