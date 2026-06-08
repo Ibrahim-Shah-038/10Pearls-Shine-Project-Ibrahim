@@ -96,6 +96,7 @@ const UserManagement = () => {
   };
 
   const canChangeRole = (targetUser) => {
+    if (targetUser.role === 'SuperUser') return false; // SuperUser role is immutable (only one SuperUser allowed)
     if (isSuperUser) return true;
     if (isAdmin) {
       // Admins cannot change roles of Admins or SuperUsers
@@ -256,7 +257,7 @@ const UserManagement = () => {
                         >
                           <option value="User">User</option>
                           <option value="Admin">Admin</option>
-                          {(isSuperUser || u.role === 'SuperUser') && <option value="SuperUser">SuperUser</option>}
+                          {u.role === 'SuperUser' && <option value="SuperUser">SuperUser</option>}
                         </select>
                       </div>
                     </td>
@@ -397,7 +398,6 @@ const UserManagement = () => {
                 >
                   <option value="User">User</option>
                   <option value="Admin">Admin</option>
-                  {isSuperUser && <option value="SuperUser">SuperUser</option>}
                 </select>
               </div>
 
