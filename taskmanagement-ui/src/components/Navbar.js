@@ -7,7 +7,8 @@ import {
   PlusCircle, 
   User, 
   LogOut, 
-  CheckSquare
+  CheckSquare,
+  Users
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -56,6 +57,16 @@ const Navbar = () => {
           <PlusCircle size={20} />
           <span>New Task</span>
         </NavLink>
+
+        {(user.role === 'Admin' || user.role === 'SuperUser') && (
+          <NavLink 
+            to="/users" 
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <Users size={20} />
+            <span>Users</span>
+          </NavLink>
+        )}
 
         <NavLink 
           to="/profile" 
