@@ -427,7 +427,6 @@ const UserManagement = () => {
           </div>
         </div>
       )}
-      `}</style>
     </div>
   );
 };
