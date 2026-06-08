@@ -35,6 +35,11 @@ const Login = () => {
     <div className="auth-wrapper">
       <div className="glass-card auth-card">
         <div className="auth-header">
+          <img 
+            src="/logo.png" 
+            alt="10Pearls Shine" 
+            style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '0.75rem' }} 
+          />
           <h2>TaskSphere</h2>
           <p>Sign in to organize your workspace</p>
         </div>
