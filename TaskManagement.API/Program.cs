@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using TaskManagement.API.Data;
+using TaskManagement.API.Helpers;
 using TaskManagement.API.Hubs;
 using TaskManagement.API.Middleware;
+using TaskManagement.API.Models;
 using TaskManagement.API.Services;
 
 // Configure Serilog
@@ -93,6 +95,35 @@ try
 
     app.UseAuthentication();
     app.UseAuthorization();
+
+    // Seed default SuperUser
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            var superuserEmail = "superuser@taskmanagement.com";
+            var existingSuper = context.Users.FirstOrDefault(u => u.Email == superuserEmail);
+            if (existingSuper == null)
+            {
+                Log.Information("Seeding default SuperUser account...");
+                context.Users.Add(new User
+                {
+                    Username = "superuser",
+                    Email = superuserEmail,
+                    PasswordHash = PasswordHasher.Hash("SuperUser@123"),
+                    Role = "SuperUser"
+                });
+                context.SaveChanges();
+                Log.Information("SuperUser account seeded successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while seeding the database.");
+        }
+    }
 
     app.MapControllers();
     app.MapHub<TaskHub>("/taskhub");
