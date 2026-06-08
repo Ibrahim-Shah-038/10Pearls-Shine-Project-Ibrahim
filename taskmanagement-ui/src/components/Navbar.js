@@ -27,9 +27,13 @@ const Navbar = () => {
 
   return (
     <nav className="sidebar">
-      <div className="logo-section">
-        <CheckSquare size={26} className="logo-icon" style={{ color: '#a855f7' }} />
-        <span className="logo-text">TaskSphere</span>
+      <div className="logo-section" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <img 
+          src="/logo.png" 
+          alt="10Pearls Shine" 
+          style={{ width: '32px', height: '32px', objectFit: 'contain' }} 
+        />
+        <span className="logo-text" style={{ fontFamily: 'Outfit', fontWeight: 800 }}>TaskSphere</span>
       </div>
 
       <div className="nav-links">
