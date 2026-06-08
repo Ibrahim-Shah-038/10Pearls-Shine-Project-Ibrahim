@@ -42,5 +42,37 @@ namespace TaskManagement.API.Services
                 Role = user.Role
             };
         }
+
+        public async Task<bool> UpdateUserRoleAsync(int id, string role)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return false;
+
+            // Sanitize role to User, Admin, or SuperUser
+            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(role, "SuperUser", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(role, "User", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // Normalize casing
+            if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) user.Role = "Admin";
+            else if (string.Equals(role, "SuperUser", StringComparison.OrdinalIgnoreCase)) user.Role = "SuperUser";
+            else user.Role = "User";
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return false;
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

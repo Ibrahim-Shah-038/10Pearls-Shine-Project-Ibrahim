@@ -8,5 +8,7 @@ namespace TaskManagement.API.Services
     {
         Task<IEnumerable<UserDto>> GetUsersAsync();
         Task<UserDto?> GetUserByIdAsync(int id);
+        Task<bool> UpdateUserRoleAsync(int id, string role);
+        Task<bool> DeleteUserAsync(int id);
     }
 }

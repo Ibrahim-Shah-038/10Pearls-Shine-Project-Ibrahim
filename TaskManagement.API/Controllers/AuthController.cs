@@ -41,19 +41,8 @@ namespace TaskManagement.API.Controllers
                 return BadRequest(new { message = "Email is already registered." });
             }
 
-            // Determine role (sanitize to Admin/SuperUser/User)
+            // For security, all new self-registrations default strictly to "User" role.
             string role = "User";
-            if (!string.IsNullOrWhiteSpace(dto.Role))
-            {
-                if (dto.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-                {
-                    role = "Admin";
-                }
-                else if (dto.Role.Equals("SuperUser", StringComparison.OrdinalIgnoreCase))
-                {
-                    role = "SuperUser";
-                }
-            }
 
             var user = new User
             {
