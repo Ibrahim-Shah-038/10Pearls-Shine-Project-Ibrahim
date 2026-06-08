@@ -66,30 +66,30 @@ namespace TaskManagement.Tests
         }
 
         [Fact]
-        public async Task CreateUser_ShouldReturnBadRequest_WhenCallerIsAdminAndRoleIsSuperUser()
+        public async Task CreateUser_ShouldReturnBadRequest_WhenRoleIsSuperUser()
         {
             // Arrange
             var userServiceMock = MockUserService();
             var dto = new RegisterDto { Username = "newsuper", Email = "super@example.com", Password = "Password123", Role = "SuperUser" };
-            var controller = CreateControllerWithUser(userServiceMock.Object, "Admin");
+            var controller = CreateControllerWithUser(userServiceMock.Object, "SuperUser");
 
             // Act
             var result = await controller.CreateUser(dto);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("Admins cannot create SuperUser accounts", badRequestResult.Value.ToString());
+            Assert.Contains("Creating additional SuperUser accounts is not permitted", badRequestResult.Value.ToString());
         }
 
         [Fact]
-        public async Task UpdateRole_ShouldReturnBadRequest_WhenCallerIsAdminAndTargetIsSuperUser()
+        public async Task UpdateRole_ShouldReturnBadRequest_WhenTargetIsSuperUser()
         {
             // Arrange
             var userServiceMock = MockUserService();
             userServiceMock.Setup(s => s.GetUserByIdAsync(2))
                 .ReturnsAsync(new UserDto { Id = 2, Username = "targetsuper", Email = "super@example.com", Role = "SuperUser" });
 
-            var controller = CreateControllerWithUser(userServiceMock.Object, "Admin");
+            var controller = CreateControllerWithUser(userServiceMock.Object, "SuperUser");
             var request = new UpdateRoleRequest { Role = "User" };
 
             // Act
@@ -97,7 +97,26 @@ namespace TaskManagement.Tests
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("Admins cannot modify roles of other Admins or SuperUsers", badRequestResult.Value.ToString());
+            Assert.Contains("The SuperUser account role cannot be changed", badRequestResult.Value.ToString());
+        }
+
+        [Fact]
+        public async Task UpdateRole_ShouldReturnBadRequest_WhenRoleToAssignIsSuperUser()
+        {
+            // Arrange
+            var userServiceMock = MockUserService();
+            userServiceMock.Setup(s => s.GetUserByIdAsync(2))
+                .ReturnsAsync(new UserDto { Id = 2, Username = "targetuser", Email = "user@example.com", Role = "User" });
+
+            var controller = CreateControllerWithUser(userServiceMock.Object, "SuperUser");
+            var request = new UpdateRoleRequest { Role = "SuperUser" };
+
+            // Act
+            var result = await controller.UpdateRole(2, request);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Contains("Assigning the SuperUser role is not permitted", badRequestResult.Value.ToString());
         }
 
         [Fact]
