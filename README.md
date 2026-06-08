@@ -97,3 +97,21 @@ To execute all 21 backend unit tests, navigate to the project root and run:
 ```bash
 dotnet test
 ```
+
+---
+
+## Structured Logging (Serilog)
+Serilog is integrated into the backend pipeline to capture structured diagnostic events:
+- **Console Logging**: Real-time console logs are rendered during server execution (captures CORS, DbCommand execution times, controller activity, and exceptions).
+- **File Logging**: Rotating log files are generated automatically and saved under `TaskManagement.API/logs/log-.txt` with daily file rolling policies.
+
+---
+
+## Static Code Analysis (SonarQube)
+A `sonar-project.properties` file is configured at the workspace root directory. To scan the codebase for code quality, bugs, and code smells:
+1. Ensure your local SonarQube server is running.
+2. Ensure you have the `SonarScanner CLI` installed.
+3. Run the scanner from the project root directory:
+   ```bash
+   sonar-scanner
+   ```
