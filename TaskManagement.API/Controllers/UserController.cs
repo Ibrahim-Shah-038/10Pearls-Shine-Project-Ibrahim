@@ -56,12 +56,11 @@ namespace TaskManagement.API.Controllers
                 return BadRequest(new { message = "Username, email, and password are required." });
             }
 
-            // Privilege check: Admins cannot create SuperUsers
-            if (string.Equals(currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase) && 
-                string.Equals(dto.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+            // Prevent creation of SuperUser accounts (only one SuperUser allowed in the system)
+            if (string.Equals(dto.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogWarning("Admin user attempted to create a SuperUser account.");
-                return BadRequest(new { message = "Admins cannot create SuperUser accounts." });
+                _logger.LogWarning("User attempted to create a SuperUser account. User creation restricted to User/Admin roles.");
+                return BadRequest(new { message = "Creating additional SuperUser accounts is not permitted." });
             }
 
             _logger.LogInformation("Creating user '{Username}' with role '{Role}' by administrator role '{AdminRole}'", dto.Username, dto.Role ?? "User", currentUserRole);
@@ -97,22 +96,28 @@ namespace TaskManagement.API.Controllers
                 return NotFound(new { message = "User not found." });
             }
 
+            // Prevent changing the role of any SuperUser account
+            if (string.Equals(targetUser.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("Attempted to change the role of SuperUser user ID {TargetId}.", id);
+                return BadRequest(new { message = "The SuperUser account role cannot be changed." });
+            }
+
+            // Prevent promoting anyone to SuperUser (only one SuperUser allowed in the system)
+            if (string.Equals(request.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("Attempted to promote user ID {TargetId} to SuperUser.", id);
+                return BadRequest(new { message = "Assigning the SuperUser role is not permitted. Only one SuperUser is allowed." });
+            }
+
             // Privilege checks for Admins
             if (string.Equals(currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase))
             {
-                // Admins cannot change the role of a SuperUser or another Admin
-                if (string.Equals(targetUser.Role, "SuperUser", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(targetUser.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+                // Admins cannot change the role of another Admin
+                if (string.Equals(targetUser.Role, "Admin", StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogWarning("Admin user attempted to change role of a privileged user (ID: {TargetId}, Current Role: {TargetRole})", id, targetUser.Role);
-                    return BadRequest(new { message = "Admins cannot modify roles of other Admins or SuperUsers." });
-                }
-
-                // Admins cannot promote anyone to SuperUser
-                if (string.Equals(request.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogWarning("Admin user attempted to promote user ID {TargetId} to SuperUser.", id);
-                    return BadRequest(new { message = "Admins cannot promote users to SuperUser." });
+                    _logger.LogWarning("Admin user attempted to change role of another Admin (ID: {TargetId})", id);
+                    return BadRequest(new { message = "Admins cannot modify roles of other Admins." });
                 }
             }
 
