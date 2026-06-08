@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TaskManagement.API.Data;
 using TaskManagement.API.DTOs;
+using TaskManagement.API.Helpers;
+using TaskManagement.API.Models;
 
 namespace TaskManagement.API.Services
 {
@@ -33,6 +35,39 @@ namespace TaskManagement.API.Services
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null) return null;
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role
+            };
+        }
+
+        public async Task<UserDto?> CreateUserAsync(RegisterDto dto)
+        {
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (existingUser != null) return null;
+
+            // Sanitize role to User, Admin, or SuperUser
+            string role = "User";
+            if (!string.IsNullOrWhiteSpace(dto.Role))
+            {
+                if (string.Equals(dto.Role, "Admin", StringComparison.OrdinalIgnoreCase)) role = "Admin";
+                else if (string.Equals(dto.Role, "SuperUser", StringComparison.OrdinalIgnoreCase)) role = "SuperUser";
+            }
+
+            var user = new User
+            {
+                Username = dto.Username,
+                Email = dto.Email,
+                PasswordHash = PasswordHasher.Hash(dto.Password),
+                Role = role
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
 
             return new UserDto
             {
