@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Hourglass, Play, CheckCircle2, ListTodo, Sparkles } from 'lucide-react';
+import { Hourglass, Play, CheckCircle2, ListTodo } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -41,8 +41,7 @@ const Dashboard = () => {
   return (
     <div>
       <header style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-          <Sparkles size={20} style={{ color: '#a855f7' }} />
+        <div style={{ marginBottom: '0.5rem' }}>
           <span style={{ color: '#a855f7', fontWeight: 600, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Overview
           </span>
