@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, User, Mail, Key, Shield, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { UserPlus, User, Mail, Key, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const Signup = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('User');
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ const Signup = () => {
     }
 
     setLoading(true);
-    const result = await register(username, email, password, role);
+    const result = await register(username, email, password, 'User');
     setLoading(false);
 
     if (result.success) {
@@ -139,32 +139,7 @@ const Signup = () => {
             </div>
           </div>
 
-          <div className="form-group" style={{ marginBottom: '2rem' }}>
-            <label htmlFor="role">Role (For Testing Purposes)</label>
-            <div style={{ position: 'relative' }}>
-              <Shield 
-                size={18} 
-                style={{ 
-                  position: 'absolute', 
-                  left: '0.75rem', 
-                  top: '50%', 
-                  transform: 'translateY(-50%)',
-                  color: '#94a3b8' 
-                }} 
-              />
-              <select
-                id="role"
-                className="form-control"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={{ paddingLeft: '2.5rem', appearance: 'none', backgroundPosition: 'calc(100% - 1rem) 50%', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundSize: '1.25rem' }}
-              >
-                <option value="User">Regular User</option>
-                <option value="Admin">Administrator</option>
-                <option value="SuperUser">Super User</option>
-              </select>
-            </div>
-          </div>
+
 
           <button 
             type="submit" 
