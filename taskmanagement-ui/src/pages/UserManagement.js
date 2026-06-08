@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, AlertCircle, CheckCircle2, Shield, User, RefreshCw } from 'lucide-react';
+import { Trash2, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 
 const UserManagement = () => {
   const { user: currentUser } = useAuth();
