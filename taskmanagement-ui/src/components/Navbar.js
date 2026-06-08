@@ -7,7 +7,6 @@ import {
   PlusCircle, 
   User, 
   LogOut, 
-  CheckSquare,
   Users
 } from 'lucide-react';
 
